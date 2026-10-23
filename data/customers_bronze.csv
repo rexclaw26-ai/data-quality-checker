@@ -1,0 +1,5 @@
+customer_id,email,age,created_at
+1,alice@example.com,30,2026-10-20T00:00:00Z
+2,bob@example.com,25,2026-10-22T00:00:00Z
+3,,150,2026-09-01T00:00:00Z
+2,invalid-email,22,2026-10-22T00:00:00Z

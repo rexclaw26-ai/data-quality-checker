@@ -1,0 +1,23 @@
+datasets:
+  - id: customers_bronze
+    path: data/customers_bronze.csv
+    rules:
+      - column: customer_id
+        type: not_null
+        severity: error
+      - column: customer_id
+        type: unique
+        severity: error
+      - column: email
+        type: regex
+        pattern: "^[^@]+@[^@]+\\.[^@]+$"
+        severity: warning
+      - column: created_at
+        type: freshness
+        max_age_days: 7
+        severity: warning
+      - column: age
+        type: range
+        min: 0
+        max: 120
+        severity: error
