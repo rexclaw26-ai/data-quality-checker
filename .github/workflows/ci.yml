@@ -19,12 +19,11 @@ jobs:
       - name: Run checks (YAML rules)
         run: python run_checks.py --rules rules.example.yaml
       - name: Log results to Google Sheets
-        if: secrets.SPREADSHEET_ID != '' && secrets.GCP_CREDENTIALS != ''
+        if: ${{ secrets.SPREADSHEET_ID != '' && secrets.GCP_CREDENTIALS != '' }}
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
         run: |
-          # Reconstruct credentials file for sheets_client.py (expects GOOGLE_CREDENTIALS or ~/.config/gws/credentials.json)
           mkdir -p ~/.config/gws
           echo "$GCP_CREDENTIALS" > ~/.config/gws/credentials.json
           echo "Credentials restored, logging to $SPREADSHEET_ID"
