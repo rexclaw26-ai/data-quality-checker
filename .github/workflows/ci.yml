@@ -1,0 +1,28 @@
+name: Data Quality Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Run checks (YAML rules)
+        run: python run_checks.py --rules rules.example.yaml
+      # Optional: log to Google Sheets if secret is set
+      - name: Run checks and log to Sheets
+        if: secrets.SPREADSHEET_ID != ''
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: |
+          echo "Logging to Sheets $SPREADSHEET_ID"
+          python run_checks.py --rules rules.example.yaml --sheets-id "$SPREADSHEET_ID" || echo "Sheets logging skipped (no credentials)"
