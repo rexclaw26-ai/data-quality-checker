@@ -1,12 +1,10 @@
 name: Data Quality Checks
-
-"on":
+on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -27,5 +25,4 @@ jobs:
         run: |
           mkdir -p ~/.config/gws
           echo "$GCP_CREDENTIALS" > ~/.config/gws/credentials.json
-          echo "Credentials restored, logging to $SPREADSHEET_ID"
           python run_checks.py --rules rules.example.yaml --sheets-id "$SPREADSHEET_ID"
