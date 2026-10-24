@@ -18,11 +18,14 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run checks (YAML rules)
         run: python run_checks.py --rules rules.example.yaml
-      # Optional: log to Google Sheets if secret is set
-      - name: Run checks and log to Sheets
-        if: secrets.SPREADSHEET_ID != ''
+      - name: Log results to Google Sheets
+        if: secrets.SPREADSHEET_ID != '' && secrets.GCP_CREDENTIALS != ''
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
         run: |
-          echo "Logging to Sheets $SPREADSHEET_ID"
-          python run_checks.py --rules rules.example.yaml --sheets-id "$SPREADSHEET_ID" || echo "Sheets logging skipped (no credentials)"
+          # Reconstruct credentials file for sheets_client.py (expects GOOGLE_CREDENTIALS or ~/.config/gws/credentials.json)
+          mkdir -p ~/.config/gws
+          echo "$GCP_CREDENTIALS" > ~/.config/gws/credentials.json
+          echo "Credentials restored, logging to $SPREADSHEET_ID"
+          python run_checks.py --rules rules.example.yaml --sheets-id "$SPREADSHEET_ID"

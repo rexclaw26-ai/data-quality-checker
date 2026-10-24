@@ -8,6 +8,19 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 def get_service(credentials_path=None):
     creds = None
+    # Support CI: GCP_CREDENTIALS env var can be inline JSON
+    inline = os.environ.get("GCP_CREDENTIALS")
+    if inline and inline.strip().startswith("{"):
+        try:
+            data = json.loads(inline)
+            creds = Credentials.from_authorized_user_info(data, SCOPES)
+            if creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            if creds and creds.valid:
+                return build("sheets", "v4", credentials=creds)
+        except Exception as e:
+            print(f"GCP_CREDENTIALS inline failed: {e}")
+    # File-based fallback (local + CI writes to ~/.config/gws/credentials.json)
     default_path = os.path.expanduser("~/.config/gws/credentials.json")
     path = credentials_path or os.environ.get("GOOGLE_CREDENTIALS", default_path)
     if os.path.exists(path):
@@ -16,7 +29,7 @@ def get_service(credentials_path=None):
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
     if not creds or not creds.valid:
-        raise RuntimeError(f"No valid credentials at {path} - run 'gws auth login'")
+        raise RuntimeError(f"No valid credentials at {path} or GCP_CREDENTIALS - run 'gws auth login'")
     return build("sheets", "v4", credentials=creds)
 
 def read_validation_rules(spreadsheet_id, service=None):
@@ -34,16 +47,12 @@ def read_validation_rules(spreadsheet_id, service=None):
         if rule_type=="regex":
             entry["pattern"] = rule_def
         elif rule_type=="range":
-            # threshold like "0-120" or definition
             entry["definition"] = rule_def
             entry["threshold"] = threshold
             try:
                 if "-" in threshold:
                     a,b = threshold.split("-",1)
                     entry["min"]= float(a.strip()); entry["max"]= float(b.strip())
-                elif rule_def:
-                    # fallback parse rule_def
-                    pass
             except: pass
         elif rule_type=="freshness":
             try: entry["max_age_days"]= int(threshold or rule_def or 7)
