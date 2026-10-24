@@ -13,16 +13,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run data quality checks
-        run: python run_checks.py --rules rules.example.yaml
+      - run: pip install -r requirements.txt
+      - run: python run_checks.py --rules rules.example.yaml
       - name: Log results to Google Sheets
-        if: ${{ secrets.SPREADSHEET_ID != '' && secrets.GCP_CREDENTIALS != '' }}
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
         run: |
+          if [ -z "$SPREADSHEET_ID" ] || [ -z "$GCP_CREDENTIALS" ]; then
+            echo "No Sheets secrets configured - skipping Sheets logging"
+            exit 0
+          fi
           mkdir -p ~/.config/gws
           echo "$GCP_CREDENTIALS" > ~/.config/gws/credentials.json
+          echo "Logging to $SPREADSHEET_ID"
           python run_checks.py --rules rules.example.yaml --sheets-id "$SPREADSHEET_ID"
