@@ -21,3 +21,28 @@ datasets:
         min: 0
         max: 120
         severity: error
+  - id: orders_silver
+    path: data/orders_silver.csv
+    rules:
+      - column: order_id
+        type: not_null
+        severity: error
+      - column: order_id
+        type: unique
+        severity: error
+      - column: amount
+        type: range
+        min: 0.01
+        max: 10000
+        severity: error
+      - column: order_date
+        type: freshness
+        max_age_days: 30
+        severity: warning
+      - column: status
+        type: regex
+        pattern: "^(completed|pending|cancelled)$"
+        severity: warning
+      - column: customer_id
+        type: not_null
+        severity: error

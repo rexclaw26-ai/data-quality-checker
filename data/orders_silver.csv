@@ -1,0 +1,6 @@
+order_id,customer_id,amount,order_date,status
+1001,1,250.00,2026-10-23T00:00:00Z,completed
+1002,2,0.00,2026-10-22T00:00:00Z,completed
+1003,2,-50.00,2026-10-23T00:00:00Z,pending
+1002,3,75.00,2026-09-01T00:00:00Z,completed
+1005,,120.00,2026-10-23T00:00:00Z,unknown
